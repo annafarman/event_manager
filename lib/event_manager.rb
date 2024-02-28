@@ -1,8 +1,8 @@
 require 'csv' #for RUBY CSV
 require 'google/apis/civicinfo_v2'
+require 'erb'
+
 puts 'Event Manager Initialized!'
-
-
 
 def clean_zipcode(zipcode)
     # if zipcode.nil?
@@ -27,15 +27,11 @@ def legislators_by_zipcode(zip)
             address: zip,
             levels: 'country',
             roles: ['legislatorUpperBody', 'legislatorLowerBody']
-        )
-        legislators = legislators.officials
+        ).officials
 
         # legislators_names = legislators.map do |legislator|
         #     legislator.name
         # end
-
-        legislators_names = legislators.map(&:name)
-        legislators_names.join(", ")
     rescue
         'You can find your representatives by visiting www.commoncause.org/take-action/find-elected-officials'
     end
@@ -49,18 +45,20 @@ contents = CSV.open(
     )
 
 template_letter = File.read('form_letter.html')
+erb_template = ERB.new template_letter
+
 
 contents.each do |row|
     name = row[:first_name]
     zipcode = clean_zipcode(row[:zipcode])
 
     legislators = legislators_by_zipcode(zipcode)
-
-    personal_letter = template_letter.gsub('FIRST_NAME', name)
-    personal_letter.gsub!('LEGISLATORS', legislators)
- 
     # puts "#{name} #{zipcode} #{legislators}"
-    puts personal_letter
+    # personal_letter = template_letter.gsub('FIRST_NAME', name)
+    # personal_letter.gsub!('LEGISLATORS', legislators)
+
+    form_letter = erb_template.result(binding)
+    puts form_letter
 end
 
 

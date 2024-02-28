@@ -1,6 +1,7 @@
 require 'csv' #for RUBY CSV
 require 'google/apis/civicinfo_v2'
 require 'erb'
+require 'date'
 
 puts 'Event Manager Initialized!'
 
@@ -57,9 +58,9 @@ def save_thankyou_letter(id, form_letter)
 end
 
 @registration_hour = []
+@registration_day = []
 
 def peak_reg_time
-
     registration_counts = Hash.new(0)   # p registration_counts {}
     @registration_hour.each do |time|
         registration_counts[time] += 1
@@ -76,6 +77,20 @@ def peak_reg_time
     end
 end
 
+def peak_reg_day
+    registration_counts = Hash.new(0)
+    # p @registration_day
+    @registration_day.each do |day|
+        registration_counts[day] += 1
+    end
+
+    peak_day = registration_counts.select { |day, count| 
+        count == registration_counts.values.max
+    }.keys
+
+    # p registration_counts
+    puts "Most people registered on #{peak_day.join(', ')}."
+end
 
 contents = CSV.open(
     'event_attendees.csv', 
@@ -92,10 +107,13 @@ contents.each do |row|
     name = row[:first_name]
     zipcode = clean_zipcode(row[:zipcode])
     phone_num = clean_phone_number(row[:homephone])
+    reg_time = row[:regdate].split(' ')
 
-    @registration_hour << row[:regdate].split(' ')[1].split(':')[0]
+    @registration_hour << reg_time[1].split(':')[0]
     #obtaining the hour only. result: ["10", "13", "13", "19", "11", "15", "16", "17", "1", "16", "18", "21", "11", "13", "20", "19", "21", "16", "20"]
     
+    date = Date.strptime(reg_time[0], "%m/%d/%y")
+    @registration_day << date.strftime("%A")
 
     # legislators = legislators_by_zipcode(zipcode)
     # form_letter = erb_template.result(binding)
@@ -105,5 +123,5 @@ contents.each do |row|
 end
 
 peak_reg_time
-
+peak_reg_day
 

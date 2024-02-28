@@ -115,10 +115,10 @@ contents.each do |row|
     date = Date.strptime(reg_time[0], "%m/%d/%y")
     @registration_day << date.strftime("%A")
 
-    # legislators = legislators_by_zipcode(zipcode)
-    # form_letter = erb_template.result(binding)
+    legislators = legislators_by_zipcode(zipcode)
+    form_letter = erb_template.result(binding)
 
-    # save_thankyou_letter(id, form_letter)
+    save_thankyou_letter(id, form_letter)
 
 end
 
